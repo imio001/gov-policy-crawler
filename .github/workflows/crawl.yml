@@ -1,0 +1,47 @@
+name: 政府政策爬虫
+on:
+  # 定时触发：每周一 15:00（北京时间）
+  # GitHub Actions 使用 UTC 时间，北京时间 15:00 = UTC 7:00
+  schedule:
+    - cron: '0 7 * * 1'
+  
+  # 手动触发：方便测试
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+      
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium pandas openpyxl webdriver-manager
+      
+      - name: 安装 Edge 浏览器
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list'
+          sudo apt-get update
+          sudo apt-get install -y microsoft-edge-stable
+      
+      - name: 执行爬虫
+        run: python gov_crawler.py
+        env:
+          HEADLESS: "true"
+      
+      - name: 上传数据文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: policy-data
+          path: data/*.xlsx
+          retention-days: 30
