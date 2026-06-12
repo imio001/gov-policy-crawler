@@ -1,0 +1,14 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.idea/
+.vscode/
+data/*.xlsx
+log/*.log
+*.xlsx
+*.tmp
+*.bat
+start_crawler.bat
